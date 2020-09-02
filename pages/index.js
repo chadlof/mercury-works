@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useQuery } from 'react-query'
  
-function App() {
-  const [data, setData] = useState(null);
- 
-  useEffect(async () => {
-    const result = await axios(
-      'https://official-joke-api.appspot.com/random_joke',
-    );
- 
-    setData(result.data);
-  }, []);
- console.log({data})
+export default function App() {
+  const { isLoading, error, data } = useQuery('repoData', () =>
+    fetch('https://official-joke-api.appspot.com/random_joke').then(res =>
+      res.json()
+    )
+  )
+
+  if (isLoading) return 'Loading...'
+
+  if (error) return 'An error has occurred: ' + error.message
+console.log({data})
   return (
-<h1>{data.setup}</h1>
-  );
+    <div>
+      <h1>{data.setup}</h1>
+      <p>{data.punchline}</p>
+
+    </div>
+  )
 }
- 
-export default App
