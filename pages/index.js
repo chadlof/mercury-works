@@ -67,28 +67,45 @@ const APILinkButton = styledUI(Button)({
 })
 
 
+
 export default function App() {
-  const [getJoke, setGetJoke] = useState(false)
+  
   const [showPunch, setShowPunch] = useState(false)
-  const { isLoading, error, data, refetch } = useQuery('jokeData', () =>
+  const [isFresh, setIsFresh] = useState(true)
+  
+  const GetJoke = () => {
+    const {loading, error, data } = useQuery('jokeData', () =>
     fetch('https://official-joke-api.appspot.com/random_joke').then(res =>
       res.json()
     )
   )
-
-  // why do my styles get jacked up without these???
-  if (isLoading) return 'Loading...'
-
-  if (error) return 'An error has occurred: ' + error.message
-console.log({data})
+  const _onSetShowPunchLine = () => {
+    setShowPunch(!showPunch)
+  }
+  setIsFresh(true)
+  
+  console.log({...data})
+  
+  if (loading) return <h2>Loading...</h2>
+  
+  if (error) return <h2>An error has occurred: {error.message}</h2>
+  console.log({data})
+  if (data) return (
+    <JokeWrapper>
+       <Setup>{data.setup}</Setup>
+       <PunchButtonWrapper>
+         <PunchButton variant="contained" onClick={_onSetShowPunchLine}>{showPunch ?  'Hide Punchline' : 'Show Punch Line' }</PunchButton>
+       </PunchButtonWrapper>
+         {
+           showPunch &&
+         <PunchLine>{data.punchline}</PunchLine>
+         }
+    </JokeWrapper>
+  )
+}
 
 const _onGetNewJoke = () => {
-  refetch
-  setShowPunch(false)
-  // window.location.reload(false);
-}
-const _onSetShowPunchLine = () => {
-  setShowPunch(!showPunch)
+// setIsFresh(false)
 }
   return (
 
@@ -98,27 +115,11 @@ const _onSetShowPunchLine = () => {
           <GetJokeButton variant="contained" onClick={_onGetNewJoke}>Get a new Random Joke</GetJokeButton>
           <APILinkButton href="https://github.com/15Dkatz/official_joke_api" color="primary"> View API Docs </APILinkButton>
       </HeaderWrapper>
-     
+    
      {
-       isLoading &&
-       <h2> Loading...</h2>
-     }
-     {
-       error &&
-       <h2>{'An error has occurred: ' + error.message}</h2>
-     }
-     {
-       !isLoading && !error &&
-       <JokeWrapper>
-          <Setup>{data.setup}</Setup>
-          <PunchButtonWrapper>
-            <PunchButton variant="contained" onClick={_onSetShowPunchLine}>{showPunch ?  'Hide Punchline' : 'Show Punch Line' }</PunchButton>
-          </PunchButtonWrapper>
-            {
-              showPunch &&
-            <PunchLine>{data.punchline}</PunchLine>
-            }
-       </JokeWrapper>
+       isFresh &&
+       <GetJoke/>
+  
       }
   </Wrapper>
   )
